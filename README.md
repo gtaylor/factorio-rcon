@@ -2,6 +2,7 @@ rcon
 ====
 [![Build Status](https://travis-ci.org/madcitygg/rcon.svg)](https://travis-ci.org/madcitygg/rcon)
 [![Test Coverage](https://img.shields.io/codecov/c/github/madcitygg/rcon.svg)](https://codecov.io/github/madcitygg/rcon)
+[![GoDoc](https://godoc.org/github.com/madcitygg/rcon?status.svg)](https://godoc.org/github.com/madcitygg/rcon)
 [![License](https://img.shields.io/github/license/madcitygg/rcon.svg)](https://github.com/madcitygg/rcon/blob/master/LICENSE.md)
 
 This package implements the `rcon` protocol for communicating with Source engine servers.
