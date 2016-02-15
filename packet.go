@@ -66,8 +66,9 @@ func (p *Packet) Payload() (payload []byte, err error) {
 }
 
 func MergePackets(packets []*Packet) (*Packet, error) {
-	var size, id, typ int32
+	var size, id int32
 	var body bytes.Buffer
+	var typ int32 = -1
 
 	// if the slice is empty, we can't do anything
 	if len(packets) < 1 {
@@ -84,7 +85,7 @@ func MergePackets(packets []*Packet) (*Packet, error) {
 		if id != 0 && packet.ID != id {
 			return nil, ErrMergeInvalidID
 		}
-		if typ != 0 && packet.Type != typ {
+		if typ != -1 && packet.Type != typ {
 			return nil, ErrMergeInvalidType
 		}
 
