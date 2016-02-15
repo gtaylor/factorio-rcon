@@ -3,7 +3,6 @@ package rcon
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"net"
 	"strings"
 )
@@ -77,7 +76,7 @@ func (r *RCON) Execute(command string) (response *Packet, err error) {
 		if err != nil {
 			return
 		}
-		if response.Header.ID == cmd.Header.ID {
+		if response.ID == cmd.ID {
 			responses = append(responses, response)
 		} else {
 			break
@@ -106,14 +105,14 @@ func (r *RCON) Authenticate(password string) (err error) {
 		return
 	}
 	// Check that response returned correct ID
-	if response.Header.ID != packet.Header.ID {
+	if response.ID != packet.ID {
 		return ErrInvalidID
 	}
 
 	// The server will potentiall send a blank ResponseValue packet before giving
 	// back the correct AuthResponse. This can safely be discarded, as documented here:
 	// https://developer.valvesoftware.com/wiki/Source_RCON_Protocol#SERVERDATA_AUTH_RESPONSE
-	if response.Header.Type == ResponseValue {
+	if response.Type == ResponseValue {
 		response, err = r.ReadPacket()
 		if err != nil {
 			return err
@@ -122,12 +121,12 @@ func (r *RCON) Authenticate(password string) (err error) {
 
 	// By now we should for sure have an AuthResponse. If we don't, there's something weird
 	// going on server-side
-	if response.Header.Type != AuthResponse {
+	if response.Type != AuthResponse {
 		panic("WTF!?")
 	}
 
 	// Check that we did not receive an ID indicating that authentication failed.
-	if response.Header.ID == failedAuthResponseID {
+	if response.ID == failedAuthResponseID {
 		return ErrAuthFailed
 	}
 	return
@@ -154,22 +153,22 @@ func (r *RCON) WritePacket(packet *Packet) (err error) {
 }
 
 func (r *RCON) ReadPacket() (response *Packet, err error) {
-	// Read header fields into Header struct
-	var header Header
-	if err = binary.Read(r.conn, binary.LittleEndian, &header.Size); err != nil {
+	// Read header fields into Packet struct
+	var packet Packet
+	if err = binary.Read(r.conn, binary.LittleEndian, &packet.Size); err != nil {
 		return
 	}
-	if err = binary.Read(r.conn, binary.LittleEndian, &header.ID); err != nil {
+	if err = binary.Read(r.conn, binary.LittleEndian, &packet.ID); err != nil {
 		return
 	}
-	if err = binary.Read(r.conn, binary.LittleEndian, &header.Type); err != nil {
+	if err = binary.Read(r.conn, binary.LittleEndian, &packet.Type); err != nil {
 		return
 	}
 
 	// Read rest of packet
 	var n int
 	bytesRead := 0
-	bytesTotal := int(header.Size - packetHeaderSize)
+	bytesTotal := int(packet.Size - packetHeaderSize)
 	buf := make([]byte, bytesTotal)
 
 	for bytesRead < bytesTotal {
@@ -181,12 +180,8 @@ func (r *RCON) ReadPacket() (response *Packet, err error) {
 	}
 
 	// Trim null bytes off body
-	body := strings.TrimRight(string(buf), terminationSequence)
+	packet.Body = strings.TrimRight(string(buf), terminationSequence)
 
 	// Construct final response packet
-	response = &Packet{
-		Header: header,
-		Body:   body,
-	}
-	return
+	return &packet, nil
 }

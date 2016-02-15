@@ -18,19 +18,20 @@ const (
 	packetPaddingSize     = 2
 	packetHeaderFieldSize = 4
 	packetHeaderSize      = packetHeaderFieldSize * 2
-	packetOverhead        = packetPaddingSize + packetHeaderFieldSize*3
-	maxPacketSize         = 4096 + packetOverhead
+	maxPacketSize         = 4096 + packetPaddingSize + packetHeaderFieldSize*3
 )
 
-type Header struct {
+var (
+	ErrMergeNoPackets   = errors.New("rcon: no packets to merge")
+	ErrMergeInvalidID   = errors.New("rcon: mismatched packet ID in merge")
+	ErrMergeInvalidType = errors.New("rcon: mismatched packet type in merge")
+)
+
+type Packet struct {
 	Size int32
 	ID   int32
 	Type int32
-}
-
-type Packet struct {
-	Header Header
-	Body   string
+	Body string
 }
 
 func NewPacket(typ int32, body string) *Packet {
@@ -43,20 +44,16 @@ func NewPacket(typ int32, body string) *Packet {
 	binary.Read(rand.Reader, binary.LittleEndian, &id)
 
 	// return packet
-	return &Packet{Header{size, id, typ}, body}
+	return &Packet{size, id, typ, body}
 }
 
 func (p *Packet) Payload() (payload []byte, err error) {
-	buffer := bytes.NewBuffer(make([]byte, 0, p.Header.Size+int32(4)))
+	buffer := bytes.NewBuffer(make([]byte, 0, p.Size+packetHeaderFieldSize))
 
-	// write size
-	binary.Write(buffer, binary.LittleEndian, &p.Header.Size)
-
-	// write request id
-	binary.Write(buffer, binary.LittleEndian, &p.Header.ID)
-
-	// write type
-	binary.Write(buffer, binary.LittleEndian, &p.Header.Type)
+	// write header fields
+	binary.Write(buffer, binary.LittleEndian, p.Size)
+	binary.Write(buffer, binary.LittleEndian, p.ID)
+	binary.Write(buffer, binary.LittleEndian, p.Type)
 
 	// write null-terminated string
 	buffer.WriteString(p.Body)
@@ -74,7 +71,7 @@ func MergePackets(packets []*Packet) (*Packet, error) {
 
 	// if the slice is empty, we can't do anything
 	if len(packets) < 1 {
-		return nil, errors.New("must have at least one packet")
+		return nil, ErrMergeNoPackets
 	}
 
 	// if we only have one packet, there's no reason to merge anything
@@ -84,19 +81,19 @@ func MergePackets(packets []*Packet) (*Packet, error) {
 
 	// merge packets, taking care to throw errors if the merge doesn't make sense
 	for _, packet := range packets {
-		if id != 0 && packet.Header.ID != id {
-			return nil, errors.New("mismatched header ids")
+		if id != 0 && packet.ID != id {
+			return nil, ErrMergeInvalidID
 		}
-		if typ != 0 && packet.Header.Type != typ {
-			return nil, errors.New("mismatched packet types")
+		if typ != 0 && packet.Type != typ {
+			return nil, ErrMergeInvalidType
 		}
 
-		size += packet.Header.Size - packetHeaderSize - packetPaddingSize
-		id = packet.Header.ID
-		typ = packet.Header.Type
+		size += packet.Size - packetHeaderSize - packetPaddingSize
+		id = packet.ID
+		typ = packet.Type
 		body.WriteString(packet.Body)
 	}
 
 	// return a new merged packet
-	return &Packet{Header{size, id, typ}, body.String()}, nil
+	return &Packet{size, id, typ, body.String()}, nil
 }
