@@ -8,7 +8,8 @@ before_install:
   - go get golang.org/x/tools/cmd/cover
 
 script:
-  - go test -v -coverprofile=coverage.txt -covermode=atomic
+  - go vet -x ./...
+  - go test -coverprofile=coverage.txt -covermode=atomic -v ./...
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
