@@ -9,7 +9,7 @@ A simple example:
 package main
 
 import (
-    "github.com/madcitygg"
+    "github.com/madcitygg/rcon"
 )
 
 func main() {

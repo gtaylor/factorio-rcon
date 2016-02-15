@@ -21,21 +21,21 @@ var (
 	ErrAuthFailed          = errors.New("rcon: authentication failed")
 )
 
-type RemoteConsole struct {
+type RCON struct {
 	// TODO: add some more useful stuff here?
 	Address string
 	conn    net.Conn
 }
 
-// func (r *RemoteConsole) LocalAddr() net.Addr {
+// func (r *RCON) LocalAddr() net.Addr {
 // 	return r.conn.LocalAddr()
 // }
 
-// func (r *RemoteConsole) RemoteAddr() net.Addr {
+// func (r *RCON) RemoteAddr() net.Addr {
 // 	return r.conn.RemoteAddr()
 // }
 
-func Dial(address string) (*RemoteConsole, error) {
+func Dial(address string) (*RCON, error) {
 	// dial tcp
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
@@ -43,15 +43,15 @@ func Dial(address string) (*RemoteConsole, error) {
 	}
 
 	// create remote console
-	rc := &RemoteConsole{Address: address, conn: conn}
+	rc := &RCON{Address: address, conn: conn}
 	return rc, nil
 }
 
-func (r *RemoteConsole) Close() error {
+func (r *RCON) Close() error {
 	return r.conn.Close()
 }
 
-func (r *RemoteConsole) Execute(command string) (response *Packet, err error) {
+func (r *RCON) Execute(command string) (response *Packet, err error) {
 	// Send command to execute
 	cmd := NewPacket(ExecCommand, command)
 	if err = r.WritePacket(cmd); err != nil {
@@ -92,7 +92,7 @@ func (r *RemoteConsole) Execute(command string) (response *Packet, err error) {
 	return
 }
 
-func (r *RemoteConsole) Authenticate(password string) (err error) {
+func (r *RCON) Authenticate(password string) (err error) {
 	// Send auth package
 	packet := NewPacket(Auth, password)
 	if err = r.WritePacket(packet); err != nil {
@@ -133,7 +133,7 @@ func (r *RemoteConsole) Authenticate(password string) (err error) {
 	return
 }
 
-func (r *RemoteConsole) WritePacket(packet *Packet) (err error) {
+func (r *RCON) WritePacket(packet *Packet) (err error) {
 	// generate payload
 	var payload []byte
 	payload, err = packet.Payload()
@@ -153,7 +153,7 @@ func (r *RemoteConsole) WritePacket(packet *Packet) (err error) {
 	return
 }
 
-func (r *RemoteConsole) ReadPacket() (response *Packet, err error) {
+func (r *RCON) ReadPacket() (response *Packet, err error) {
 	// Read header fields into Header struct
 	var header Header
 	if err = binary.Read(r.conn, binary.LittleEndian, &header.Size); err != nil {
