@@ -8,11 +8,11 @@ import (
 func TestNewPacket(t *testing.T) {
 	p := NewPacket(Auth, "password")
 
-	if p.Header.Size != 22 {
-		t.Error("Expected packet size 22, got ", p.Header.Size)
+	if p.Size != 18 {
+		t.Error("Expected packet size 18, got ", p.Size)
 	}
-	if p.Header.Type != Auth {
-		t.Error("Expected packet type Auth(3), got ", p.Header.Type)
+	if p.Type != Auth {
+		t.Error("Expected packet type Auth(3), got ", p.Type)
 	}
 	if p.Body != "password" {
 		t.Error("Expected packet body \"password\", got ", p.Body)
@@ -28,8 +28,8 @@ func TestPayload(t *testing.T) {
 	body := payload[12 : len(payload)-2]
 	padding := payload[len(payload)-2:]
 
-	if !bytes.Equal(size, []byte{22, 0, 0, 0}) {
-		t.Error("Expected payload [0:4] to be bytes [22 0 0 0], got ", payload[0:4])
+	if !bytes.Equal(size, []byte{18, 0, 0, 0}) {
+		t.Error("Expected payload [0:4] to be bytes [18 0 0 0], got ", payload[0:4])
 	}
 	if !bytes.Equal(typ, []byte{3, 0, 0, 0}) {
 		t.Error("Expected payload [8:12] to be bytes [3 0 0 0], got ", typ)
