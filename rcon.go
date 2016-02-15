@@ -17,6 +17,7 @@ var (
 	ErrInvalidRead         = errors.New("rcon: failed to read from remote connection")
 	ErrInvalidID           = errors.New("rcon: invalid response ID from remote connection")
 	ErrInvalidAuthResponse = errors.New("rcon: invalid response type during auth")
+	ErrInvalidPacketOrder  = errors.New("rcon: packets from server received out of order")
 	ErrAuthFailed          = errors.New("rcon: authentication failed")
 )
 
@@ -76,10 +77,20 @@ func (r *RCON) Execute(command string) (response *Packet, err error) {
 		if err != nil {
 			return
 		}
+
+		// Handle sentinel package
 		if response.ID == cmd.ID {
+			// append responses with same id
 			responses = append(responses, response)
+		} else if response.ID == sentinel.ID {
+			// if it's a sentinel packet, it might not be the final one
+			// check for specific body to determine end of sentinel packets
+			if response.Body == "\x00\x01" {
+				break
+			}
 		} else {
-			break
+			// something has gotten out of order
+			return nil, ErrInvalidPacketOrder
 		}
 	}
 
