@@ -1,9 +1,11 @@
-# rcon
+rcon
+====
+[![Build Status](https://travis-ci.org/madcitygg/rcon.svg)](https://travis-ci.org/madcitygg/rcon)
 
 This package implements the `rcon` protocol for communicating with Source engine servers.
 
-## Usage
-
+Usage
+-----
 A simple example:
 ```go
 package main
