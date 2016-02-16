@@ -7,6 +7,9 @@ go:
 before_install:
   - go get golang.org/x/tools/cmd/cover
 
+install:
+  - go get -t ./...
+
 script:
   - go vet -x ./...
   - go test -coverprofile=coverage.txt -covermode=atomic -v ./...
