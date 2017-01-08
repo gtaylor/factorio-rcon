@@ -1,11 +1,9 @@
-rcon
-====
-[![Build Status](https://travis-ci.org/madcitygg/rcon.svg)](https://travis-ci.org/madcitygg/rcon)
-[![Test Coverage](https://img.shields.io/codecov/c/github/madcitygg/rcon.svg)](https://codecov.io/github/madcitygg/rcon)
-[![GoDoc](https://godoc.org/github.com/madcitygg/rcon?status.svg)](https://godoc.org/github.com/madcitygg/rcon)
-[![License](https://img.shields.io/github/license/madcitygg/rcon.svg)](https://github.com/madcitygg/rcon/blob/master/LICENSE.md)
+factorio-rcon
+=============
+[![GoDoc](https://godoc.org/github.com/gtaylor/factorio-rcon?status.svg)](https://godoc.org/github.com/gtaylor/factorio-rcon)
+[![License](https://img.shields.io/github/license/gtaylor/factorio-rcon.svg)](https://github.com/gtaylor/factorio-rcon/blob/master/LICENSE.md)
 
-This package implements the `rcon` protocol for communicating with Source engine servers.
+This package is a fork of [madcitygg/rcon](https://github.com/madcitygg/rcon) with a few tweaks to work with Factorio. Namely, Factorio's rejection of sending `SERVERDATA_RESPONSE_VALUE` packets to check for multi-packet responses (details [here](https://developer.valvesoftware.com/wiki/Source_RCON_Protocol#Multiple-packet_Responses)).
 
 Usage
 -----
@@ -14,7 +12,8 @@ A simple example:
 package main
 
 import (
-    "github.com/madcitygg/rcon"
+    "fmt"
+    "github.com/gtaylor/factorio-rcon"
 )
 
 func main() {
@@ -37,3 +36,8 @@ func main() {
     fmt.Printf("Response: %+v\n", response)
 }
 ```
+
+License
+-------
+
+Like the upstream [madcitygg/rcon](https://github.com/madcitygg/rcon), this package is licensed under the MIT License.
