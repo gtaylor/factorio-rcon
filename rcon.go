@@ -76,10 +76,6 @@ func (r *RCON) Authenticate(password string) (err error) {
 	if err != nil {
 		return
 	}
-	// Check that response returned correct ID
-	if response.ID != packet.ID {
-		return ErrInvalidID
-	}
 
 	// The server will potentially send a blank ResponseValue packet before giving
 	// back the correct AuthResponse. This can safely be discarded, as documented here:
@@ -100,6 +96,11 @@ func (r *RCON) Authenticate(password string) (err error) {
 	// Check that we did not receive an ID indicating that authentication failed.
 	if response.ID == failedAuthResponseID {
 		return ErrAuthFailed
+	}
+
+	// Check that response returned correct ID
+	if response.ID != packet.ID {
+		return ErrInvalidID
 	}
 	return
 }
